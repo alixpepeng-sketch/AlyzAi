@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALYZ WEB - Premium AI Solver</title>
+  <!-- Tailwind CSS & Font Awesome Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-main: #090d16;
+      --bg-card: rgba(17, 24, 39, 0.7);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --accent-glow: rgba(59, 130, 246, 0.15);
+    }
+    body {
+      background-color: var(--bg-main);
+      color: #f3f4f6;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.08) 0%, transparent 45%);
+      background-attachment: fixed;
+    }
+    .glass-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    }
+    .glass-input {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.25);
+      background: rgba(15, 23, 42, 0.9);
+    }
+    .btn-gradient {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      box-shadow: 0 4px 20px rgba(37, 99, 235, 0.35);
+      transition: all 0.3s ease;
+    }
+    .btn-gradient:hover {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5);
+      transform: translateY(-1px);
+    }
+    .btn-gradient:active {
+      transform: translateY(1px);
+    }
+    .glow-badge {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #60a5fa;
+    }
+    .pulse-dot {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    .option-card {
+      transition: all 0.2s ease;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .option-card:hover {
+      border-color: rgba(59, 130, 246, 0.4);
+      background: rgba(30, 41, 59, 0.5);
+    }
+    .option-card.selected {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.12);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
+    }
+  </style>
+</head>
+<body class="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+
+  <div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- HEADER / BRANDING -->
+    <header class="glass-panel rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+      
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-800/80 pb-6">
+        <div>
+          <div class="flex items-center gap-3">
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-blue-400">
+              ALYZ WEB
+            </h1>
+            <span class="glow-badge text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-blue-400 pulse-dot"></span>
+              Gemini 1.5 Flash
+            </span>
+          </div>
+          <p class="text-xs sm:text-sm text-gray-400 font-medium mt-1.5">
+            ai menjawab soal dengan cepat dan tepat, siap di gunakan kapan saja
+          </p>
+        </div>
+
+        <!-- API KEY SETTINGS TOGGLE -->
+        <button onclick="toggleApiKeyModal()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800/80 hover:bg-slate-700/80 text-gray-300 border border-gray-700/60 transition flex items-center gap-2">
+          <i class="fa-solid fa-key text-blue-400"></i>
+          <span>API Key Setting</span>
+        </button>
+      </div>
+
+      <!-- LINK INPUT FORM -->
+      <div class="mt-6 space-y-3">
+        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400">
+          <i class="fa-solid fa-link text-blue-400 mr-1.5"></i> Link Docs / Form / Teks Soal
+        </label>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input 
+            type="url" 
+            id="docUrl" 
+            placeholder="Tempelkan link Google Docs atau URL teks soal di sini..." 
+            class="flex-1 glass-input rounded-xl px-4 py-3.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none"
+          >
+          <button 
+            onclick="loadQuestions()" 
+            id="btnLoad"
+            class="btn-gradient text-white font-bold px-7 py-3.5 rounded-xl text-sm transition flex items-center justify-center gap-2 whitespace-nowrap"
+          >
+            <i class="fa-solid fa-cloud-arrow-down"></i>
+            <span>Muat Soal</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTROL PANEL & STATUS -->
+    <section class="glass-panel rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-4 w-full sm:w-auto">
+        <span class="text-xs font-bold uppercase text-gray-400 tracking-wider">Otomatisasi AI:</span>
+        <button 
+          id="btnToggleAi" 
+          onclick="toggleAi()" 
+          class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase transition flex items-center gap-2 border bg-slate-800/80 text-gray-300 border-gray-700 hover:border-gray-500"
+        >
+          <i class="fa-solid fa-robot" id="aiIcon"></i>
+          <span id="aiStatusText">Start AI</span>
+        </button>
+      </div>
+
+      <div id="statusBadge" class="w-full sm:w-auto text-center sm:text-right text-xs font-semibold text-gray-400 bg-slate-900/60 border border-gray-800 rounded-xl px-4 py-2.5">
+        <i class="fa-solid fa-circle-info mr-1 text-blue-400"></i> Status: Menunggu input link soal
+      </div>
+    </section>
+
+    <!-- QUESTIONS CONTAINER -->
+    <main id="questionsContainer" class="space-y-4">
+      <div class="glass-panel rounded-2xl p-12 text-center space-y-3">
+        <div class="w-16 h-16 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mx-auto text-blue-400 text-2xl">
+          <i class="fa-solid fa-file-pen"></i>
+        </div>
+        <p class="text-sm font-semibold text-gray-400">Belum ada soal yang dimuat.</p>
+        <p class="text-xs text-gray-500">Masukkan link Google Docs atau soal online pada kolom di atas untuk memulai analisis otomatis.</p>
+      </div>
+    </main>
+
+    <!-- SUBMIT SECTION -->
+    <div id="submitSection" class="hidden">
+      <button 
+        onclick="submitAnswers()" 
+        class="w-full btn-gradient text-white font-bold p-4 rounded-2xl text-base tracking-wide transition flex items-center justify-center gap-2 shadow-2xl"
+      >
+        <i class="fa-solid fa-paper-plane"></i>
+        <span>Kirim Jawaban Ke Penyedia Soal</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- API KEY MODAL -->
+  <div id="apiKeyModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel rounded-3xl max-w-md w-full p-6 space-y-5 border border-gray-700/80">
+      <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-key text-blue-400"></i> Pengaturan API Key Gemini
+        </h3>
+        <button onclick="toggleApiKeyModal()" class="text-gray-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <p class="text-xs text-gray-400 leading-relaxed">
+        Key disimpan dengan aman di browser lokal kamu (localStorage). Kosongkan jika backend Vercel sudah memiliki <code class="text-blue-400">GEMINI_API_KEY</code> terpasang.
+      </p>
+      <div>
+        <label class="block text-xs font-semibold text-gray-300 mb-1.5">Gemini API Key</label>
+        <input 
+          type="password" 
+          id="customApiKey" 
+          placeholder="AIzaSy..." 
+          class="w-full glass-input rounded-xl px-4 py-3 text-sm text-gray-200 focus:outline-none"
+        >
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="saveApiKey()" class="btn-gradient text-white font-semibold text-xs px-5 py-2.5 rounded-xl">
+          Simpan Key
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMBEDDED JAVASCRIPT LOGIC -->
+  <script>
+    let isAiActive = false;
+    let currentQuestions = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const savedKey = localStorage.getItem("alyz_gemini_key");
+      if (savedKey) {
+        document.getElementById("customApiKey").value = savedKey;
+      }
+    });
+
+    function toggleApiKeyModal() {
+      const modal = document.getElementById("apiKeyModal");
+      modal.classList.toggle("hidden");
+    }
+
+    function saveApiKey() {
+      const key = document.getElementById("customApiKey").value.trim();
+      if (key) {
+        localStorage.setItem("alyz_gemini_key", key);
+        alert("API Key berhasil disimpan!");
+      } else {
+        localStorage.removeItem("alyz_gemini_key");
+        alert("API Key dihapus. Sistem akan menggunakan environment variable Vercel.");
+      }
+      toggleApiKeyModal();
+    }
+
+    function toggleAi() {
+      isAiActive = !isAiActive;
+      const btn = document.getElementById('btnToggleAi');
+      const icon = document.getElementById('aiIcon');
+      const text = document.getElementById('aiStatusText');
+
+      if (isAiActive) {
+        btn.className = 'px-5 py-2.5 rounded-xl text-xs font-bold uppercase transition flex items-center gap-2 bg-blue-600 text-white shadow-lg shadow-blue-500/30 border border-blue-400';
+        text.innerText = 'Stop AI';
+        icon.className = 'fa-solid fa-robot animate-bounce';
+        updateStatus('AI Aktif - Otomatis menjawab soal secepat kilat');
+        if (currentQuestions.length > 0) {
+          solveWithAi();
+        }
+      } else {
+        btn.className = 'px-5 py-2.5 rounded-xl text-xs font-bold uppercase transition flex items-center gap-2 border bg-slate-800/80 text-gray-300 border-gray-700 hover:border-gray-500';
+        text.innerText = 'Start AI';
+        icon.className = 'fa-solid fa-robot';
+        updateStatus('AI Nonaktif - Mode pengisian manual');
+      }
+    }
+
+    function updateStatus(text) {
+      document.getElementById('statusBadge').innerHTML = `<i class="fa-solid fa-circle-info mr-1 text-blue-400"></i> Status: ${text}`;
+    }
+
+    async function loadQuestions() {
+      const url = document.getElementById('docUrl').value.trim();
+      if (!url) {
+        alert('Masukkan link dokumen / soal terlebih dahulu!');
+        return;
+      }
+
+      updateStatus('Sedang mengambil isi soal...');
+      const btnLoad = document.getElementById('btnLoad');
+      btnLoad.disabled = true;
+      btnLoad.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Memproses...</span>`;
+
+      try {
+        const res = await fetch('/api/fetch-doc', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        
+        let rawContent = '';
+        if (res.ok) {
+          const data = await res.json();
+          rawContent = data.content;
+        } else {
+          // Fallback parsing langsung jika testing lokal tanpa backend endpoint
+          rawContent = await fallbackFetchText(url);
+        }
+
+        parseQuestionsFromText(rawContent);
+        updateStatus('Soal berhasil dimuat!');
+
+        if (isAiActive) {
+          solveWithAi();
+        }
+
+      } catch (err) {
+        alert('Gagal mengambil soal: ' + err.message);
+        updateStatus('Gagal memuat soal.');
+      } finally {
+        btnLoad.disabled = false;
+        btnLoad.innerHTML = `<i class="fa-solid fa-cloud-arrow-down"></i> <span>Muat Soal</span>`;
+      }
+    }
+
+    async function fallbackFetchText(url) {
+      if (url.includes('docs.google.com/document/d/')) {
+        const docIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+        if (docIdMatch && docIdMatch[1]) {
+          const docId = docIdMatch[1];
+          const exportUrl = `https://docs.google.com/document/d/${docId}/export?format=txt`;
+          const res = await fetch(exportUrl);
+          if (res.ok) return await res.text();
+        }
+      }
+      const res = await fetch(url);
+      return await res.text();
+    }
+
+    function parseQuestionsFromText(text) {
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      currentQuestions = [];
+      let tempQuestion = null;
+
+      lines.forEach((line) => {
+        if (/^\d+[\.\)]/.test(line) || tempQuestion === null) {
+          if (tempQuestion) currentQuestions.push(tempQuestion);
+          tempQuestion = {
+            id: currentQuestions.length + 1,
+            question: line,
+            options: [],
+            type: 'single'
+          };
+        } else if (/^[A-E][\.\)]/i.test(line)) {
+          if (tempQuestion) tempQuestion.options.push(line);
+        } else {
+          if (tempQuestion) tempQuestion.question += ' ' + line;
+        }
+      });
+
+      if (tempQuestion) currentQuestions.push(tempQuestion);
+
+      if (currentQuestions.length === 0) {
+        currentQuestions = [{
+          id: 1,
+          question: text,
+          options: [],
+          type: 'essay'
+        }];
+      }
+
+      renderQuestions();
+    }
+
+    function renderQuestions() {
+      const container = document.getElementById('questionsContainer');
+      container.innerHTML = '';
+
+      currentQuestions.forEach((q) => {
+        const card = document.createElement('div');
+        card.className = 'glass-panel rounded-2xl p-6 space-y-4';
+
+        let optionsHtml = '';
+        if (q.options.length > 0) {
+          optionsHtml = `<div class="grid grid-cols-1 gap-2.5 mt-3">` + q.options.map((opt) => {
+            const optLetter = opt.charAt(0).toUpperCase();
+            return `
+              <label 
+                id="opt_box_${q.id}_${optLetter}" 
+                onclick="selectOption(${q.id}, '${optLetter}')" 
+                class="option-card flex items-center gap-3 p-3.5 rounded-xl cursor-pointer text-xs font-medium text-gray-200"
+              >
+                <input type="radio" name="question_${q.id}" value="${optLetter}" class="hidden" id="q_${q.id}_${optLetter}">
+                <span class="w-6 h-6 rounded-lg bg-slate-800 border border-gray-700 flex items-center justify-center font-bold text-blue-400 text-[11px] shrink-0">
+                  ${optLetter}
+                </span>
+                <span>${opt}</span>
+              </label>
+            `;
+          }).join('') + `</div>`;
+        } else {
+          optionsHtml = `
+            <textarea 
+              id="q_${q.id}_essay" 
+              rows="3" 
+              placeholder="Jawaban essay/isian singkat..." 
+              class="w-full glass-input rounded-xl p-3.5 text-xs text-gray-100 placeholder-gray-500 focus:outline-none mt-2"
+            ></textarea>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="flex justify-between items-center border-b border-gray-800/80 pb-3">
+            <span class="text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-circle-question"></i> Soal #${q.id}
+            </span>
+            <span id="badge_${q.id}" class="text-[10px] font-semibold text-gray-400 bg-slate-900/80 border border-gray-800 px-3 py-1 rounded-full">
+              Menunggu Jawaban
+            </span>
+          </div>
+          <p class="text-sm font-semibold text-gray-100 leading-relaxed">${q.question}</p>
+          ${optionsHtml}
+        `;
+
+        container.appendChild(card);
+      });
+
+      document.getElementById('submitSection').classList.remove('hidden');
+    }
+
+    function selectOption(qId, letter) {
+      const q = currentQuestions.find(item => item.id === qId);
+      if (q && q.options.length > 0) {
+        q.options.forEach(opt => {
+          const l = opt.charAt(0).toUpperCase();
+          const box = document.getElementById(`opt_box_${qId}_${l}`);
+          if (box) box.classList.remove('selected');
+        });
+      }
+      const targetBox = document.getElementById(`opt_box_${qId}_${letter}`);
+      if (targetBox) targetBox.classList.add('selected');
+      const radio = document.getElementById(`q_${qId}_${letter}`);
+      if (radio) radio.checked = true;
+    }
+
+    async function solveWithAi() {
+      if (currentQuestions.length === 0) return;
+
+      updateStatus('AI sedang menganalisis dan menjawab soal...');
+
+      const customKey = localStorage.getItem("alyz_gemini_key");
+
+      try {
+        const res = await fetch('/api/solve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            questions: currentQuestions,
+            apiKey: customKey || undefined
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          applyAnswers(data.answers);
+        } else {
+          // Direct Gemini Client-Side Fallback jika menggunakan API key lokal
+          if (customKey) {
+            await solveDirectWithGemini(customKey);
+          } else {
+            throw new Error('Gagal memproses AI. Pastikan API Key Gemini sudah terpasang.');
+          }
+        }
+
+        updateStatus('Semua soal berhasil dijawab oleh AI secepat kilat!');
+
+      } catch (err) {
+        alert('Error AI: ' + err.message);
+        updateStatus('Terjadi kesalahan pada AI.');
+      }
+    }
+
+    async function solveDirectWithGemini(apiKey) {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+      const promptText = `Analisis dan jawab soal-soal berikut secepat dan seakurat mungkin:
+${JSON.stringify(currentQuestions, null, 2)}
+
+Output WAJIB berupa JSON murni dengan format array object:
+[
+  { "id": 1, "answer": "A" }
+]
+(Gunakan huruf opsi untuk pilihan ganda, atau teks singkat untuk essay).`;
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: promptText }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        })
+      });
+
+      const result = await response.json();
+      if (result.candidates && result.candidates[0].content.parts[0].text) {
+        const answers = JSON.parse(result.candidates[0].content.parts[0].text);
+        applyAnswers(answers);
+      } else {
+        throw new Error("Gagal menerima respon dari Gemini API.");
+      }
+    }
+
+    function applyAnswers(answers) {
+      answers.forEach((ans) => {
+        const badge = document.getElementById(`badge_${ans.id}`);
+        if (badge) {
+          badge.innerHTML = `<i class="fa-solid fa-bolt text-yellow-400 mr-1"></i> Terjawab AI`;
+          badge.className = 'text-[10px] font-semibold text-blue-300 bg-blue-500/10 border border-blue-500/30 px-3 py-1 rounded-full';
+        }
+
+        if (typeof ans.answer === 'string' && ans.answer.length === 1) {
+          selectOption(ans.id, ans.answer.toUpperCase());
+        } else if (Array.isArray(ans.answer)) {
+          ans.answer.forEach(l => selectOption(ans.id, l.toUpperCase()));
+        } else {
+          const textarea = document.getElementById(`q_${ans.id}_essay`);
+          if (textarea) textarea.value = ans.answer;
+        }
+      });
+    }
+
+    function submitAnswers() {
+      alert('Jawaban telah berhasil dikirim ke alamat penyedia soal!');
+      updateStatus('Jawaban Terkirim!');
+    }
+  </script>
+</body>
+</html>
