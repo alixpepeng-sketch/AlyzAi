@@ -89,25 +89,25 @@
         </div>
       </div>
 
-      <!-- INPUT LINK DOCS / FORMS -->
+      <!-- INPUT TEKS SOAL (PASTE LANGSUNG) -->
       <div class="mt-6 space-y-3">
         <label class="block text-xs font-bold uppercase tracking-wider text-gray-400">
-          <i class="fa-solid fa-link text-blue-400 mr-1"></i> Masukkan Link Google Docs / Forms (Publik)
+          <i class="fa-solid fa-paste text-blue-400 mr-1"></i> Tempelkan (Paste) Seluruh Soal Ujian di Sini
         </label>
-        <div class="flex flex-col sm:flex-row gap-3">
-          <input 
-            type="url" 
-            id="docUrl" 
-            placeholder="https://docs.google.com/forms/... atau Docs..." 
-            class="flex-1 glass-input rounded-xl px-4 py-3.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none"
-          >
+        <div class="flex flex-col gap-3">
+          <textarea 
+            id="soalInput" 
+            rows="5" 
+            placeholder="Contoh: 1. Apa ibu kota Indonesia? A. Jakarta B. Bandung C. Surabaya..." 
+            class="w-full glass-input rounded-xl p-4 text-xs text-gray-100 placeholder-gray-500 focus:outline-none resize-y"
+          ></textarea>
           <button 
             onclick="loadQuestions()" 
             id="btnLoad"
-            class="btn-gradient text-white font-bold px-7 py-3.5 rounded-xl text-sm transition flex items-center justify-center gap-2 whitespace-nowrap"
+            class="btn-gradient text-white font-bold py-3.5 rounded-xl text-sm transition flex items-center justify-center gap-2 w-full"
           >
-            <i class="fa-solid fa-cloud-arrow-down"></i>
-            <span>Muat Soal</span>
+            <i class="fa-solid fa-bolt"></i>
+            <span>Proses & Jawab Soal Sekarang</span>
           </button>
         </div>
       </div>
@@ -120,15 +120,15 @@
         <button 
           id="btnToggleAi" 
           onclick="toggleAi()" 
-          class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase transition flex items-center gap-2 border bg-slate-800 text-gray-300 border-gray-700"
+          class="px-5 py-2.5 rounded-xl text-xs font-bold uppercase transition flex items-center gap-2 border bg-blue-600 text-white border-blue-400 shadow-lg"
         >
-          <i class="fa-solid fa-robot" id="aiIcon"></i>
-          <span id="aiStatusText">Start AI</span>
+          <i class="fa-solid fa-robot animate-bounce" id="aiIcon"></i>
+          <span id="aiStatusText">AI Aktif</span>
         </button>
       </div>
 
       <div id="statusBadge" class="w-full sm:w-auto text-center sm:text-right text-xs font-semibold text-gray-400 bg-slate-900/60 border border-gray-800 rounded-xl px-4 py-2.5">
-        <i class="fa-solid fa-circle-info mr-1 text-blue-400"></i> Status: Menunggu link soal
+        <i class="fa-solid fa-circle-info mr-1 text-blue-400"></i> Status: Siap menerima soal
       </div>
     </section>
 
@@ -139,7 +139,7 @@
           <i class="fa-solid fa-file-pen"></i>
         </div>
         <p class="text-sm font-semibold text-gray-400">Belum ada soal yang dimuat.</p>
-        <p class="text-xs text-gray-500">Masukkan link dokumen di atas untuk mulai dijawab otomatis oleh AI.</p>
+        <p class="text-xs text-gray-500">Paste teks soal dari Google Forms/Ujian ke kotak di atas lalu klik tombol proses.</p>
       </div>
     </main>
 
@@ -157,7 +157,7 @@
   </div>
 
   <script>
-    let isAiActive = false;
+    let isAiActive = true; // Default aktif biar langsung jawab
     let currentQuestions = [];
 
     function toggleAi() {
@@ -167,18 +167,14 @@
       const text = document.getElementById('aiStatusText');
 
       if (isAiActive) {
-        btn.className = 'px-5 py-2.5 rounded-xl text-xs font-bold uppercase transition flex items-center gap-2 bg-blue-600 text-white shadow-lg shadow-blue-500/30 border border-blue-400';
-        text.innerText = 'Stop AI';
+        btn.className = 'px-5 py-2.5 rounded-xl text-xs font-bold uppercase transition flex items-center gap-2 bg-blue-600 text-white border-blue-400 shadow-lg';
+        text.innerText = 'AI Aktif';
         icon.className = 'fa-solid fa-robot animate-bounce';
-        updateStatus('AI Aktif - Siap menjawab soal');
-        if (currentQuestions.length > 0) {
-          solveWithAi();
-        }
+        if (currentQuestions.length > 0) solveWithAi();
       } else {
         btn.className = 'px-5 py-2.5 rounded-xl text-xs font-bold uppercase transition flex items-center gap-2 border bg-slate-800 text-gray-300 border-gray-700';
-        text.innerText = 'Start AI';
+        text.innerText = 'AI Nonaktif';
         icon.className = 'fa-solid fa-robot';
-        updateStatus('AI Nonaktif');
       }
     }
 
@@ -186,41 +182,19 @@
       document.getElementById('statusBadge').innerHTML = `<i class="fa-solid fa-circle-info mr-1 text-blue-400"></i> Status: ${text}`;
     }
 
-    async function loadQuestions() {
-      const url = document.getElementById('docUrl').value.trim();
-      if (!url) {
-        alert('Masukkan link Google Docs / Forms terlebih dahulu!');
+    function loadQuestions() {
+      const text = document.getElementById('soalInput').value.trim();
+      if (!text) {
+        alert('Paste teks soal terlebih dahulu!');
         return;
       }
 
-      updateStatus('Mengambil soal dari link...');
-      const btnLoad = document.getElementById('btnLoad');
-      btnLoad.disabled = true;
-      btnLoad.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Memproses...</span>`;
+      updateStatus('Memproses soal...');
+      parseQuestionsFromText(text);
+      updateStatus('Soal berhasil dimuat!');
 
-      try {
-        const res = await fetch('/api/fetch-doc', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url })
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Gagal mengambil dokumen');
-
-        parseQuestionsFromText(data.content);
-        updateStatus('Soal berhasil dimuat!');
-
-        if (isAiActive) {
-          solveWithAi();
-        }
-
-      } catch (err) {
-        alert('Error: ' + err.message);
-        updateStatus('Gagal memuat soal.');
-      } finally {
-        btnLoad.disabled = false;
-        btnLoad.innerHTML = `<i class="fa-solid fa-cloud-arrow-down"></i> <span>Muat Soal</span>`;
+      if (isAiActive) {
+        solveWithAi();
       }
     }
 
