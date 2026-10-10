@@ -89,16 +89,16 @@
         </div>
       </div>
 
-      <!-- INPUT LINK DOCS -->
+      <!-- INPUT LINK DOCS / FORMS -->
       <div class="mt-6 space-y-3">
         <label class="block text-xs font-bold uppercase tracking-wider text-gray-400">
-          <i class="fa-solid fa-link text-blue-400 mr-1"></i> Masukkan Link Google Docs Soal (Publik)
+          <i class="fa-solid fa-link text-blue-400 mr-1"></i> Masukkan Link Google Docs / Forms (Publik)
         </label>
         <div class="flex flex-col sm:flex-row gap-3">
           <input 
             type="url" 
             id="docUrl" 
-            placeholder="https://docs.google.com/document/d/.../edit" 
+            placeholder="https://docs.google.com/forms/... atau Docs..." 
             class="flex-1 glass-input rounded-xl px-4 py-3.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none"
           >
           <button 
@@ -139,7 +139,7 @@
           <i class="fa-solid fa-file-pen"></i>
         </div>
         <p class="text-sm font-semibold text-gray-400">Belum ada soal yang dimuat.</p>
-        <p class="text-xs text-gray-500">Masukkan link Google Docs di atas untuk mulai dijawab otomatis oleh AI.</p>
+        <p class="text-xs text-gray-500">Masukkan link dokumen di atas untuk mulai dijawab otomatis oleh AI.</p>
       </div>
     </main>
 
@@ -189,11 +189,11 @@
     async function loadQuestions() {
       const url = document.getElementById('docUrl').value.trim();
       if (!url) {
-        alert('Masukkan link Google Docs terlebih dahulu!');
+        alert('Masukkan link Google Docs / Forms terlebih dahulu!');
         return;
       }
 
-      updateStatus('Mengambil soal dari link Docs...');
+      updateStatus('Mengambil soal dari link...');
       const btnLoad = document.getElementById('btnLoad');
       btnLoad.disabled = true;
       btnLoad.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Memproses...</span>`;
